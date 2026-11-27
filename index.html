@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OptiPC – Optimise Windows sans rien casser</title>
+<meta name="description" content="OptiPC : 58 réglages réversibles et 16 tâches de maintenance pour alléger et accélérer Windows. Sauvegarde avant chaque changement, retour en arrière en un clic.">
+<style>
+:root{
+  --bg:#0d0a14; --sidebar:#120d1c; --card:#17111f; --card-hover:#1e1729;
+  --text:#f2eefb; --muted:#9a8fb3; --accent:#8b5cf6; --accent-hover:#a07af8;
+  --orange:#ff8a2b; --orange-hover:#ffa04d; --orange-text:#1a0f00;
+  --green:#34d399; --track:#2a2238; --line:#2a2238; --red:#f87171;
+  --glow:rgba(139,92,246,.28);
+  --font:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f3f1f8; --sidebar:#ffffff; --card:#ffffff; --card-hover:#ece9f4;
+    --text:#1c1626; --muted:#625a78; --accent:#7c3aed; --accent-hover:#6d28d9;
+    --orange:#f97316; --orange-hover:#ea580c; --green:#059669; --track:#c4bdd3;
+    --line:#ddd7ea; --red:#dc2626; --glow:rgba(124,58,237,.18);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f3f1f8; --sidebar:#ffffff; --card:#ffffff; --card-hover:#ece9f4;
+  --text:#1c1626; --muted:#625a78; --accent:#7c3aed; --accent-hover:#6d28d9;
+  --orange:#f97316; --orange-hover:#ea580c; --green:#059669; --track:#c4bdd3;
+  --line:#ddd7ea; --red:#dc2626; --glow:rgba(124,58,237,.18);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+h1,h2,h3{line-height:1.15;margin:0}
+.muted{color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent-hover);outline-offset:3px;border-radius:8px}
+
+/* barre du haut */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:20px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;text-decoration:none;letter-spacing:.2px}
+.logo svg{width:26px;height:26px;color:var(--accent)}
+.logo b{color:var(--accent)}
+.nav ul{display:flex;gap:6px;list-style:none;margin:0 0 0 auto;padding:0}
+.nav ul a{display:block;padding:8px 14px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:600;font-size:15px}
+.nav ul a:hover{background:var(--card);color:var(--text)}
+
+/* boutons (comme FlatButton de l'application) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;cursor:pointer;
+  font:700 15px var(--font);letter-spacing:.4px;padding:14px 26px;border-radius:12px;text-decoration:none;
+  transition:background .15s,transform .15s,box-shadow .15s;text-transform:uppercase}
+.btn:active{transform:translateY(1px)}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:0 8px 30px var(--glow)}
+.btn-accent:hover{background:var(--accent-hover)}
+.btn-orange{background:var(--orange);color:var(--orange-text)}
+.btn-orange:hover{background:var(--orange-hover)}
+.btn-ghost{background:var(--track);color:var(--text)}
+.btn-ghost:hover{background:color-mix(in srgb,var(--track) 80%,var(--text))}
+.btn-sm{padding:10px 18px;font-size:13px}
+
+/* hero */
+.hero{position:relative;padding:72px 0 56px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:560px;pointer-events:none;
+  background:radial-gradient(60% 60% at 50% 0%,var(--glow),transparent 70%)}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--card);
+  border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--muted)}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+.hero h1{font-size:clamp(36px,5.4vw,60px);font-weight:800;margin:18px 0 18px;letter-spacing:-.5px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p.lead{font-size:18px;color:var(--muted);max-width:540px;margin:0 0 30px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.fine{margin-top:16px;font-size:13px;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:12px 36px;margin-top:34px}
+.stats div b{display:block;font-size:30px;font-weight:800;color:var(--text)}
+.stats div span{font-size:13px;color:var(--muted)}
+
+/* fenetre d'application simulee */
+.app{background:var(--bg);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(139,92,246,.08)}
+.app-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--sidebar);border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);font-weight:600}
+.dots{display:flex;gap:6px}.dots i{width:11px;height:11px;border-radius:50%;background:var(--track)}
+.app-body{display:grid;grid-template-columns:120px 1fr}
+.side{background:var(--sidebar);padding:14px 10px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.side span{padding:8px 10px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.side span.on{background:var(--card-hover);color:var(--text);box-shadow:inset 3px 0 0 var(--accent)}
+.main{padding:16px;display:grid;gap:10px}
+.progress{background:var(--card);border-radius:12px;padding:12px 14px}
+.progress .row{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:8px}
+.progress .row b{color:var(--accent)}
+.bar{height:8px;background:var(--track);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .5s ease}
+.progress small{display:block;margin-top:8px;color:var(--muted);font-size:12px}
+.tw{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:12px;padding:12px 14px}
+.tw:hover{background:var(--card-hover)}
+.tw div{flex:1;min-width:0}
+.tw strong{display:block;font-size:13.5px}
+.tw small{display:block;color:var(--muted);font-size:12px;line-height:1.35;margin-top:2px}
+
+/* interrupteur */
+.sw{flex:none;width:44px;height:24px;border-radius:99px;border:0;background:var(--track);position:relative;cursor:pointer;
+  transition:background .2s;padding:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;
+  transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.sw[aria-checked="true"]{background:var(--accent)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+
+/* sections */
+section{padding:72px 0}
+.eyebrow{color:var(--accent);font-weight:800;font-size:13px;letter-spacing:1.6px;text-transform:uppercase}
+.sec-head{max-width:640px;margin-bottom:40px}
+.sec-head h2{font-size:clamp(28px,3.6vw,40px);font-weight:800;margin:10px 0 12px;letter-spacing:-.3px}
+.sec-head p{color:var(--muted);font-size:17px;margin:0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid transparent;border-radius:16px;padding:24px;transition:background .15s,border-color .15s,transform .15s}
+.card:hover{background:var(--card-hover);border-color:var(--line);transform:translateY(-2px)}
+.card .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);
+  color:var(--accent);font-size:22px;margin-bottom:16px}
+.card h3{font-size:18px;margin-bottom:8px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.cat{background:var(--card);border-radius:16px;padding:20px}
+.cat h3{font-size:16px;margin-bottom:4px;color:var(--text)}
+.cat .n{font-size:12.5px;color:var(--accent);font-weight:700;margin-bottom:12px;display:block}
+.cat ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cat li{font-size:13.5px;color:var(--muted);padding-left:16px;position:relative}
+.cat li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
+.step{background:var(--card);border-radius:16px;padding:26px;position:relative}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:38px;height:38px;border-radius:50%;
+  background:var(--accent);color:#fff;font-weight:800;margin-bottom:16px}
+.step h3{font-size:18px;margin-bottom:8px}.step p{margin:0;color:var(--muted);font-size:15px}
+
+.safe{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.box{background:var(--card);border-radius:16px;padding:26px}
+.box h3{font-size:18px;margin-bottom:14px}
+.box ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.box li{display:flex;gap:12px;font-size:15px;color:var(--muted)}
+.box li::before{flex:none;font-weight:800}
+.box.yes li::before{content:"✔";color:var(--green)}
+.box.no li::before{content:"✖";color:var(--red)}
+
+details{background:var(--card);border-radius:14px;padding:0 22px;margin-bottom:10px}
+summary{cursor:pointer;list-style:none;padding:18px 0;font-weight:700;font-size:16px;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▸";color:var(--accent);transition:transform .2s;flex:none}
+details[open] summary::after{transform:rotate(90deg)}
+details p{margin:0 0 18px;color:var(--muted);font-size:15px}
+
+.final{text-align:center;background:linear-gradient(180deg,var(--card),var(--bg));border-radius:24px;padding:56px 24px;border:1px solid var(--line)}
+.final h2{font-size:clamp(28px,3.6vw,40px);margin-bottom:12px}
+.final p{color:var(--muted);margin:0 auto 28px;max-width:520px}
+.final .cta{justify-content:center}
+footer{padding:36px 0 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+footer .row{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer a{color:var(--muted)}footer a:hover{color:var(--text)}
+
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr}
+  .grid3,.steps{grid-template-columns:1fr 1fr}
+  .cats{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .nav ul{display:none}.nav .btn{margin-left:auto}
+  .hero{padding:44px 0 36px}
+  section{padding:52px 0}
+  .grid3,.steps,.cats,.safe{grid-template-columns:1fr}
+  .app-body{grid-template-columns:1fr}.side{display:none}
+  .btn{width:100%}.nav .btn{width:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+/* ===== Démo interactive : réplique de la fenêtre OptiPC (variables propres à la fenêtre) ===== */
+.demo-note{display:flex;gap:10px;align-items:center;margin:0 0 16px;color:var(--muted);font-size:14px}
+.demo-note b{color:var(--text)}
+.winapp{--w-bg:#0d0a14;--w-side:#120d1c;--w-card:#17111f;--w-hover:#1e1729;--w-text:#f2eefb;--w-muted:#8f84a8;
+  --w-accent:#8b5cf6;--w-accent-h:#a07af8;--w-orange:#ff8a2b;--w-orange-h:#ffa04d;--w-orange-t:#1a0f00;
+  --w-green:#34d399;--w-track:#2a2238;--w-track-h:#3a3050;--w-red:#f87171;
+  position:relative;display:flex;height:700px;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:var(--w-bg);color:var(--w-text);font-family:var(--font);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.winapp[data-wt="noir"]{--w-bg:#000;--w-side:#0b0b0b;--w-card:#141414;--w-hover:#1d1d1d;--w-text:#f2f2f2;--w-muted:#9a9a9a;--w-track:#2c2c2c;--w-track-h:#3d3d3d}
+.winapp[data-wt="blanc"]{--w-bg:#f3f1f8;--w-side:#fff;--w-card:#fff;--w-hover:#ece9f4;--w-text:#1c1626;--w-muted:#6b6480;
+  --w-accent:#7c3aed;--w-accent-h:#6d28d9;--w-orange:#f97316;--w-orange-h:#ea580c;--w-green:#059669;--w-track:#c4bdd3;--w-track-h:#b2aac5;--w-red:#dc2626}
+@media (prefers-color-scheme: light){
+  .winapp[data-wt="systeme"]{--w-bg:#f3f1f8;--w-side:#fff;--w-card:#fff;--w-hover:#ece9f4;--w-text:#1c1626;--w-muted:#6b6480;
+    --w-accent:#7c3aed;--w-accent-h:#6d28d9;--w-orange:#f97316;--w-orange-h:#ea580c;--w-green:#059669;--w-track:#c4bdd3;--w-track-h:#b2aac5;--w-red:#dc2626}
+}
+@media (prefers-color-scheme: dark){
+  .winapp[data-wt="systeme"]{--w-bg:#000;--w-side:#0b0b0b;--w-card:#141414;--w-hover:#1d1d1d;--w-text:#f2f2f2;--w-muted:#9a9a9a;--w-track:#2c2c2c;--w-track-h:#3d3d3d}
+}
+.winapp *{box-sizing:border-box}
+.winapp section.wa-page{padding:0}
+.wa-side{flex:none;width:200px;background:var(--w-side);display:flex;flex-direction:column;padding:22px 0 14px}
+.wa-brand{padding:0 22px 18px;border-bottom:1px solid color-mix(in srgb,var(--w-track) 70%,transparent);margin-bottom:10px}
+.wa-brand b{display:block;font-size:26px;font-weight:800;color:var(--w-accent);letter-spacing:-.3px}
+.wa-brand span{font-size:12px;color:var(--w-muted)}
+.wa-nav{display:flex;flex-direction:column}
+.wa-nav button{display:flex;align-items:center;gap:12px;border:0;background:none;color:var(--w-muted);font:600 15px var(--font);
+  padding:13px 22px;text-align:left;cursor:pointer;transition:background .15s,color .15s}
+.wa-nav button svg{width:18px;height:18px;flex:none}
+.wa-nav button:hover{background:var(--w-hover);color:var(--w-text)}
+.wa-nav button.on{background:var(--w-hover);color:var(--w-text);box-shadow:inset 3px 0 0 var(--w-accent)}
+.wa-nav button.on svg{color:var(--w-accent)}
+.wa-ver{margin-top:auto;text-align:center;font-size:12px;color:var(--w-muted)}
+.wa-main{flex:1;min-width:0;overflow-y:auto;padding:26px 28px 34px;scrollbar-width:thin;scrollbar-color:var(--w-track) transparent}
+.wa-page{display:none}.wa-page.on{display:block}
+.wa-h{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.wa-h h3{font-size:28px;font-weight:800;margin:0;letter-spacing:-.3px}
+.wa-sub{margin:4px 0 0;color:var(--w-muted);font-size:14px}
+.wa-pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wa-btn{border:0;cursor:pointer;font:800 13px var(--font);letter-spacing:.5px;text-transform:uppercase;padding:11px 18px;border-radius:6px;
+  background:var(--w-track);color:var(--w-text);transition:background .15s;display:inline-flex;align-items:center;gap:8px}
+.wa-btn:hover{background:var(--w-track-h)}
+.wa-btn.or{background:var(--w-orange);color:var(--w-orange-t)}.wa-btn.or:hover{background:var(--w-orange-h)}
+.wa-btn.ac{background:var(--w-accent);color:#fff}.wa-btn.ac:hover{background:var(--w-accent-h)}
+.wa-btn.dk{background:var(--w-card)}.wa-btn.dk:hover{background:var(--w-hover)}
+.wa-btn[disabled]{opacity:.45;cursor:default}
+.wa-tag{font-size:13px;color:var(--w-muted);display:inline-flex;align-items:center;gap:6px}
+.wa-tag i{width:7px;height:7px;border-radius:50%;background:var(--w-muted)}
+.wa-tag.adm i{background:var(--w-green)}
+.wa-gauges{display:flex;gap:16px;margin-top:22px;flex-wrap:wrap}
+.wa-g{background:var(--w-card);width:200px;padding:14px 10px 12px;text-align:center}
+.wa-g svg{width:150px;height:150px;display:block;margin:0 auto}
+.wa-g .v{font:800 32px var(--font);fill:var(--w-text)}
+.wa-g b{display:block;margin-top:4px;font-size:15px}
+.wa-g small{color:var(--w-muted);font-size:12px}
+.wa-box{background:var(--w-card);padding:22px 24px;margin-top:18px}
+.wa-box h4{margin:0 0 14px;font-size:19px;font-weight:800}
+.wa-box p{margin:0 0 12px;color:var(--w-muted);font-size:14px}
+.wa-box p.warn{color:var(--w-orange);font-weight:700;font-size:13px}
+.wa-box p.ok{color:var(--w-green);font-weight:700}
+.wa-box p.tx{color:var(--w-text)}
+.wa-cfg{display:grid;grid-template-columns:150px 1fr;gap:12px 10px;font-size:15px}
+.wa-cfg dt{margin:0;color:var(--w-muted);font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding-top:3px}
+.wa-cfg dd{margin:0}
+.wa-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 4px}
+.wa-act .wa-sub{margin:0 0 0 6px}
+.wa-tabs{display:flex;gap:26px;margin-top:14px;border-bottom:1px solid var(--w-track);overflow-x:auto}
+.wa-tabs button{border:0;background:none;color:var(--w-muted);font:800 14px var(--font);letter-spacing:.4px;text-transform:uppercase;
+  padding:12px 0;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.wa-tabs button:hover{color:var(--w-text)}
+.wa-tabs button.on{color:var(--w-accent);border-bottom-color:var(--w-accent)}
+.wa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.wa-card{background:var(--w-card);padding:20px 20px 18px;transition:background .15s}
+.wa-card:hover{background:var(--w-hover)}
+.wa-card-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.wa-card-h h4{margin:0;font-size:16.5px;font-weight:800;line-height:1.25}
+.wa-card p{margin:0 0 10px;font-size:13.5px;color:var(--w-muted);line-height:1.45}
+.wa-adm{font-size:11.5px;font-weight:800;letter-spacing:.3px;color:var(--w-orange);text-transform:uppercase}
+.wa-adm.g{color:var(--w-accent)}
+.wa-sw{flex:none;width:44px;height:24px;border-radius:99px;border:0;background:var(--w-track);position:relative;cursor:pointer;transition:background .2s;padding:0}
+.wa-sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
+.wa-sw[aria-checked="true"]{background:var(--w-accent)}
+.wa-sw[aria-checked="true"]::after{transform:translateX(20px)}
+.wa-sw.busy{opacity:.55}
+.wa-chk{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.wa-chk input{margin-top:3px;accent-color:var(--w-accent);width:17px;height:17px}
+.wa-prog{background:var(--w-card);padding:16px 22px;margin-top:16px;display:none}
+.wa-prog.on{display:block}
+.wa-prog .r{display:flex;align-items:center;gap:18px}
+.wa-prog .r strong{flex:1;font-size:16px}
+.wa-prog .pc{font-weight:800;color:var(--w-accent)}
+.wa-prog .ck{font-weight:800;color:var(--w-muted);min-width:46px;text-align:right}
+.wa-pb{height:10px;background:var(--w-track);margin:12px 0 8px}
+.wa-pb i{display:block;height:100%;width:0;background:var(--w-accent);transition:width .35s}
+.wa-prog.fin .wa-pb i{background:var(--w-green)}.wa-prog.err .wa-pb i{background:var(--w-orange)}
+.wa-prog.fin .pc{color:var(--w-green)}.wa-prog.err .pc{color:var(--w-orange)}
+.wa-st{font-size:13.5px;color:var(--w-muted)}
+.wa-er{font-size:13.5px;color:var(--w-red);margin-top:8px;white-space:pre-line}
+.wa-hist{margin-top:18px;display:grid;gap:8px}
+.wa-row{background:var(--w-card);padding:14px 18px;display:flex;gap:16px;align-items:flex-start}
+.wa-row .d{flex:none;width:8px;height:8px;border-radius:50%;margin-top:9px;background:var(--w-green)}
+.wa-row .d.x{background:var(--w-accent)}.wa-row .d.f{background:var(--w-red)}
+.wa-row div{flex:1;min-width:0}
+.wa-row b{display:block;font-size:16px}
+.wa-row span{display:block;color:var(--w-muted);font-size:13.5px;margin-top:2px}
+.wa-row time{flex:none;color:var(--w-muted);font-size:13.5px;white-space:nowrap}
+.wa-themes{display:flex;gap:8px;flex-wrap:wrap}
+.wa-themes .wa-btn.on{background:var(--w-accent);color:#fff}
+.wa-search{display:flex;gap:10px;align-items:center;background:var(--w-card);padding:12px 18px;margin-top:18px}
+.wa-search input{flex:1;background:none;border:0;outline:0;color:var(--w-text);font:15px var(--font);min-width:0}
+.wa-faq{margin-top:14px;display:grid;gap:8px}
+.wa-q{background:var(--w-card)}
+.wa-q button{width:100%;border:0;background:none;color:var(--w-text);font:800 15px var(--font);text-align:left;padding:16px 20px;cursor:pointer;display:flex;gap:12px}
+.wa-q button::before{content:"▸";color:var(--w-accent)}
+.wa-q.on button::before{content:"▾"}
+.wa-q p{display:none;margin:0;padding:0 20px 16px 44px;color:var(--w-muted);font-size:14px;white-space:pre-line}
+.wa-q.on p{display:block}
+.wa-empty{color:var(--w-muted);padding:10px 4px}
+/* boite de dialogue Windows */
+.wa-ov{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
+.wa-ov.on{display:flex}
+.wa-dlg{width:min(520px,100%);background:#fff;color:#111;border:1px solid #6b44b8;box-shadow:0 20px 60px rgba(0,0,0,.5);font-family:"Segoe UI",system-ui,sans-serif}
+.wa-dlg .t{background:#764ab0;color:#fff;display:flex;justify-content:space-between;padding:8px 12px;font-size:13px}
+.wa-dlg .b{display:flex;gap:16px;padding:24px 22px;font-size:14px;white-space:pre-line;max-height:46vh;overflow:auto}
+.wa-dlg .ic{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px}
+.wa-dlg .ic.q{background:#0b78d4}.wa-dlg .ic.i{background:#0b78d4}.wa-dlg .ic.w{background:#e8a800;border-radius:6px}.wa-dlg .ic.e{background:#e0451f}
+.wa-dlg .f{background:#f0f0f0;padding:14px 18px;display:flex;justify-content:flex-end;gap:8px}
+.wa-dlg .f button{min-width:96px;padding:6px 14px;border:1px solid #adadad;background:#fdfdfd;font:14px "Segoe UI",system-ui,sans-serif;cursor:pointer}
+.wa-dlg .f button.d{border-color:#0067c0;box-shadow:inset 0 0 0 1px #0067c0}
+.wa-dlg .f button:hover{background:#e5f1fb;border-color:#0067c0}
+@media (max-width:980px){.wa-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){
+  .winapp{flex-direction:column;height:720px}
+  .wa-side{width:auto;flex-direction:row;padding:0;align-items:center;overflow-x:auto}
+  .wa-brand{display:none}.wa-ver{display:none}
+  .wa-nav{flex-direction:row}
+  .wa-nav button{padding:14px 14px;white-space:nowrap;box-shadow:none!important;border-bottom:3px solid transparent}
+  .wa-nav button.on{border-bottom-color:var(--w-accent)}
+  .wa-main{padding:20px 16px 28px}
+  .wa-grid{grid-template-columns:1fr}
+  .wa-cfg{grid-template-columns:1fr}.wa-cfg dt{padding-top:8px}
+  .wa-g{width:calc(50% - 8px)}
+  .wa-h h3{font-size:24px}
+  .wa-btn{width:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap nav">
+    <a class="logo" href="#top" aria-label="OptiPC, accueil">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 3.8C13 3.6 7 8 6 15l-1.6 4.6L9 18c7-1 11.4-7 11.2-14.2z"/><path d="M5 20 14 11"/></svg>
+      <span>Opti<b>PC</b></span>
+    </a>
+    <ul>
+      <li><a href="#demo">Démo</a></li>
+      <li><a href="#fonctions">Fonctions</a></li>
+      <li><a href="#categories">Réglages</a></li>
+      <li><a href="#securite">Sécurité</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ul>
+    <a class="btn btn-accent btn-sm" id="dl-top" href="https://github.com/Fluxxy458/optipc-releases/releases/latest/download/OptiPC.exe">Télécharger</a>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="badge"><i></i><span id="ver">Gratuit pour Windows</span></span>
+      <h1>Optimise Windows,<br><em>sans rien casser.</em></h1>
+      <p class="lead">Des dizaines de réglages pour alléger et accélérer ton PC. Chaque changement est sauvegardé avant d'être appliqué : tu peux tout annuler en un clic.</p>
+      <div class="cta">
+        <a class="btn btn-accent" id="dl-hero" href="https://github.com/Fluxxy458/optipc-releases/releases/latest/download/OptiPC.exe">⬇&nbsp; Télécharger OptiPC</a>
+        <a class="btn btn-ghost" href="#fonctions">Voir les fonctions</a>
+      </div>
+      <p class="fine">Un seul fichier .exe. Aucune installation. <a href="https://github.com/Fluxxy458/optipc-releases/releases">Toutes les versions</a></p>
+      <div class="stats">
+        <div><b>58</b><span>réglages réversibles</span></div>
+        <div><b>16</b><span>tâches de maintenance</span></div>
+        <div><b>4</b><span>thèmes</span></div>
+      </div>
+    </div>
+
+    <!-- fausse fenetre OptiPC -->
+    <div class="app" aria-label="Aperçu de l'application OptiPC">
+      <div class="app-bar"><div class="dots"><i></i><i></i><i></i></div>OptiPC</div>
+      <div class="app-body">
+        <div class="side"><span>Accueil</span><span class="on">Optimisation</span><span>Historique</span><span>Aide</span><span>Paramètres</span></div>
+        <div class="main">
+          <div class="progress" aria-live="polite">
+            <div class="row"><span id="p-title">Prêt</span><b id="p-pct">0 %</b></div>
+            <div class="bar"><i id="p-bar"></i></div>
+            <small id="p-msg">Essaie les interrupteurs ci-dessous.</small>
+          </div>
+          <div class="tw"><div><strong>Désactiver Microsoft Copilot</strong><small>Réduit l'activité en arrière-plan.</small></div>
+            <button class="sw" role="switch" aria-checked="true" aria-label="Désactiver Microsoft Copilot"></button></div>
+          <div class="tw"><div><strong>Applis en arrière-plan</strong><small>Moins de processus au démarrage.</small></div>
+            <button class="sw" role="switch" aria-checked="false" aria-label="Applis en arrière-plan"></button></div>
+          <div class="tw"><div><strong>Mode sombre de Windows</strong><small>Moins de fatigue visuelle le soir.</small></div>
+            <button class="sw" role="switch" aria-checked="true" aria-label="Mode sombre de Windows"></button></div>
+          <button class="btn btn-orange btn-sm" id="demo-all" type="button">⚡&nbsp; Tout optimiser</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Essaie-le ici, directement dans ton navigateur</h2>
+      <p>Une réplique fidèle de la fenêtre OptiPC. Clique partout : pages, réglages, thèmes, « Tout optimiser ».</p>
+    </div>
+    <p class="demo-note"><span aria-hidden="true">🛈</span><span><b>Démonstration :</b> rien n'est modifié sur ton PC. Les réglages affichés sont un extrait des 58 de l'application.</span></p>
+
+    <div class="winapp" id="wa" data-wt="violet">
+      <aside class="wa-side">
+        <div class="wa-brand"><b>OptiPC</b><span>Optimiseur Windows</span></div>
+        <nav class="wa-nav" id="wa-nav"></nav>
+        <div class="wa-ver">v3.0</div>
+      </aside>
+      <div class="wa-main" id="wa-main">
+
+        <section class="wa-page on" data-p="home">
+          <div class="wa-h"><div><h3>Tableau de bord</h3><p class="wa-sub">État de ton PC en temps réel</p></div></div>
+          <div class="wa-gauges" id="wa-gauges"></div>
+          <div class="wa-box"><h4>Ma configuration</h4>
+            <dl class="wa-cfg">
+              <dt>Système</dt><dd>Windows 11 Famille 64 bits</dd>
+              <dt>Processeur</dt><dd>Processeur 8 cœurs (exemple)</dd>
+              <dt>Mémoire</dt><dd>16 Go de RAM</dd>
+              <dt>Carte graphique</dt><dd>Carte graphique (exemple)</dd>
+              <dt>Disque système</dt><dd>SSD 512 Go</dd>
+            </dl></div>
+          <div class="wa-box"><h4>Optimiser maintenant</h4>
+            <p class="tx" id="wa-count"></p>
+            <p>Active les réglages recommandés en un clic. Chaque modification est sauvegardée et réversible.</p>
+            <button class="wa-btn or" data-go="opt">Ouvrir l'optimisation</button></div>
+        </section>
+
+        <section class="wa-page" data-p="opt">
+          <div class="wa-h"><div><h3>Optimisation</h3><p class="wa-sub">Active ou désactive chaque réglage, tout est réversible</p></div>
+            <div class="wa-pills"><span class="wa-tag" id="wa-mode"><i></i>Mode standard</span>
+              <button class="wa-btn" id="wa-adm">Relancer en administrateur</button>
+              <button class="wa-btn" id="wa-refresh">Actualiser</button></div></div>
+          <div class="wa-act"><button class="wa-btn or" id="wa-all">Tout optimiser</button><button class="wa-btn dk" id="wa-none">Tout désactiver</button>
+            <p class="wa-sub">Les réglages à risque ou personnels sont exclus.</p></div>
+          <div class="wa-prog" id="wa-prog"><div class="r"><strong id="wa-pt"></strong><span class="pc" id="wa-pp">0 %</span><span class="ck" id="wa-pc">00:00</span><button class="wa-btn" id="wa-pclose">Fermer</button></div>
+            <div class="wa-pb"><i id="wa-pbar"></i></div><div class="wa-st" id="wa-ps"></div><div class="wa-er" id="wa-pe"></div></div>
+          <div class="wa-tabs" id="wa-tabs"></div>
+          <div class="wa-grid" id="wa-grid"></div>
+        </section>
+
+        <section class="wa-page" data-p="hist">
+          <div class="wa-h"><div><h3>Historique</h3><p class="wa-sub">Tout ce qu'OptiPC a fait sur ce PC</p></div>
+            <div class="wa-pills"><button class="wa-btn" id="wa-hclear">Effacer l'historique</button></div></div>
+          <div class="wa-hist" id="wa-hist"></div>
+        </section>
+
+        <section class="wa-page" data-p="aide">
+          <div class="wa-h"><div><h3>Aide</h3><p class="wa-sub">Réponses aux questions courantes</p></div></div>
+          <label class="wa-search"><span aria-hidden="true">⌕</span><input id="wa-q" type="search" placeholder="Rechercher dans l'aide…" aria-label="Rechercher dans l'aide"></label>
+          <div class="wa-faq" id="wa-faq"></div>
+        </section>
+
+        <section class="wa-page" data-p="set">
+          <div class="wa-h"><div><h3>Paramètres</h3><p class="wa-sub">Apparence, sauvegardes et mises à jour</p></div></div>
+          <div class="wa-box"><h4>Restaurer les réglages d'origine</h4><p>Remet toutes les valeurs d'avant OptiPC grâce à la sauvegarde.</p><button class="wa-btn ac" id="wa-restore">Tout restaurer</button></div>
+          <div class="wa-box"><h4>Dossier de sauvegarde</h4><p>C:\Users\toi\AppData\Roaming\OptiPC</p><button class="wa-btn" id="wa-open">Ouvrir le dossier</button></div>
+          <div class="wa-box"><h4>Apparence</h4><div class="wa-themes" id="wa-themes"></div></div>
+          <div class="wa-box"><h4>Mises à jour</h4><p>Version installée : v3.0</p><p class="ok">✔ OptiPC est à jour</p>
+            <div class="wa-card-h" style="margin:0"><p style="margin:0" class="tx">Me prévenir au démarrage si une mise à jour existe</p><button class="wa-sw" id="wa-upd" role="switch" aria-checked="true" aria-label="Alerte de mise à jour au démarrage"></button></div></div>
+        </section>
+      </div>
+
+      <div class="wa-ov" id="wa-ov"><div class="wa-dlg" role="dialog" aria-modal="true"><div class="t"><span>OptiPC</span><span>✕</span></div>
+        <div class="b"><div class="ic" id="wa-di"></div><div id="wa-dt"></div></div><div class="f" id="wa-df"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FONCTIONS -->
+<section id="fonctions">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Fonctions</span>
+      <h2>Tout ce qu'il faut, rien de superflu.</h2>
+      <p>Le même programme, simple à lire : un interrupteur par réglage, une explication claire, et la possibilité de revenir en arrière.</p>
+    </div>
+    <div class="grid3">
+      <div class="card"><div class="ic">↺</div><h3>Toujours réversible</h3><p>La valeur d'origine est sauvegardée avant chaque changement. Désactive l'interrupteur et Windows retrouve son état d'avant.</p></div>
+      <div class="card"><div class="ic">⚡</div><h3>Tout optimiser</h3><p>Applique tous les réglages sûrs d'un coup, avec confirmation et récapitulatif. « Tout désactiver » ne remet que ce qu'OptiPC a lui-même appliqué.</p></div>
+      <div class="card"><div class="ic">▰</div><h3>Progression en direct</h3><p>Pourcentage réel, chronomètre, opération en cours, et chaque échec nommé avec sa raison. L'interface ne se fige jamais.</p></div>
+      <div class="card"><div class="ic">🧹</div><h3>Maintenance en un clic</h3><p>Fichiers temporaires, caches, réseau, disques, réparation Windows, point de restauration… Coche, lance, et lis le récapitulatif.</p></div>
+      <div class="card"><div class="ic">⟳</div><h3>Mises à jour intégrées</h3><p>OptiPC t'avertit quand une nouvelle version sort, et s'installe en un clic. Tu peux couper l'alerte au démarrage.</p></div>
+      <div class="card"><div class="ic">?</div><h3>Aide intégrée</h3><p>Une page d'aide avec recherche et un rapport de diagnostic à copier si tu es bloqué. Sans donnée personnelle.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section id="categories" style="background:var(--sidebar)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Réglages</span>
+      <h2>Cinq domaines, une seule fenêtre.</h2>
+      <p>Quelques exemples de ce qu'OptiPC sait faire.</p>
+    </div>
+    <div class="cats">
+      <div class="cat"><h3>Confidentialité</h3><span class="n">Moins de pistage</span><ul><li>Publicités et suggestions</li><li>Télémétrie</li><li>Historique d'activité</li><li>Géolocalisation</li><li>Recall</li></ul></div>
+      <div class="cat"><h3>Confort</h3><span class="n">Interface sur mesure</span><ul><li>Menu clic droit classique</li><li>Copilot et widgets</li><li>Mode sombre</li><li>Extensions de fichiers</li><li>Fin de tâche au clic droit</li></ul></div>
+      <div class="cat"><h3>Réseau</h3><span class="n">Plus réactif</span><ul><li>DNS rapide</li><li>Latence réseau</li><li>Économie d'énergie de la carte</li><li>Partage P2P des mises à jour</li></ul></div>
+      <div class="cat"><h3>Performances</h3><span class="n">Plus rapide</span><ul><li>Effets visuels</li><li>Applis en arrière-plan</li><li>Plan d'alimentation</li><li>Mode jeu, mode fenêtré</li><li>Stockage réservé</li></ul></div>
+      <div class="cat"><h3>Maintenance</h3><span class="n">16 tâches</span><ul><li>Fichiers temporaires</li><li>Caches (Store, icônes, GPU)</li><li>Vérification du disque</li><li>Rapport de batterie</li><li>Point de restauration</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENT -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Démarrer</span>
+      <h2>Trois étapes, deux minutes.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Télécharge</h3><p>Récupère OptiPC.exe. C'est un seul fichier : il n'y a rien à installer.</p></div>
+      <div class="step"><h3>Lance-le</h3><p>Windows peut afficher « éditeur inconnu » car le programme n'est pas signé : clique sur « Informations complémentaires » puis « Exécuter quand même ».</p></div>
+      <div class="step"><h3>Choisis tes réglages</h3><p>Active les interrupteurs que tu veux, ou clique sur « Tout optimiser ». Tu peux tout annuler à tout moment.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITE -->
+<section id="securite" style="background:var(--sidebar)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Sécurité</span>
+      <h2>Prudent par conception.</h2>
+      <p>OptiPC change des réglages de ton Windows : voici les règles qu'il s'impose.</p>
+    </div>
+    <div class="safe">
+      <div class="box yes"><h3>Ce qu'OptiPC fait</h3><ul>
+        <li>Sauvegarde la valeur d'origine avant chaque modification</li>
+        <li>Demande une confirmation pour les réglages sensibles</li>
+        <li>Annonce les droits administrateur nécessaires</li>
+        <li>Garde un historique de tout ce qui change</li>
+        <li>Vérifie les mises à jour avant de les installer</li></ul></div>
+      <div class="box no"><h3>Ce qu'OptiPC ne fait pas</h3><ul>
+        <li>Il ne désactive pas les mises à jour de sécurité de Windows</li>
+        <li>Il ne supprime pas tes points de restauration</li>
+        <li>Il ne pose pas de stratégie « géré par votre organisation »</li>
+        <li>Il n'envoie aucune donnée personnelle</li>
+        <li>Il ne modifie pas Windows de façon définitive</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap" style="max-width:820px">
+    <div class="sec-head">
+      <span class="eyebrow">Questions</span>
+      <h2>Les questions fréquentes.</h2>
+    </div>
+    <details><summary>Windows affiche « éditeur inconnu » ou l'antivirus réagit. Est-ce normal ?</summary>
+      <p>Oui : OptiPC n'est pas signé numériquement, donc Windows se méfie des programmes inconnus. Clique sur « Informations complémentaires » puis « Exécuter quand même ». Télécharge toujours OptiPC depuis cette page ou depuis le dépôt GitHub officiel, jamais depuis un autre site.</p></details>
+    <details><summary>Puis-je revenir en arrière ?</summary>
+      <p>Oui. Chaque réglage a son interrupteur : désactive-le et la valeur d'origine est restaurée. « Tout désactiver » annule ce qu'OptiPC a appliqué. Un point de restauration Windows peut aussi être créé depuis l'onglet Maintenance.</p></details>
+    <details><summary>Ai-je besoin des droits administrateur ?</summary>
+      <p>Certains réglages touchent la partie système de Windows et en ont besoin. OptiPC l'indique sur chaque carte et propose de se relancer en administrateur. Les autres fonctionnent sans.</p></details>
+    <details><summary>Comment fonctionnent les mises à jour ?</summary>
+      <p>Au lancement, OptiPC regarde s'il existe une nouvelle version sur GitHub et te le propose. Tu peux l'installer en un clic, la reporter, ou désactiver l'alerte au démarrage dans les Paramètres.</p></details>
+    <details><summary>Où trouver les anciennes versions ?</summary>
+      <p>Sur la <a href="https://github.com/Fluxxy458/optipc-releases/releases">page des versions</a> : chaque numéro a son fichier OptiPC.exe.</p></details>
+    <details><summary>Un réglage ne s'active pas. Que faire ?</summary>
+      <p>Ouvre la page « Aide » dans OptiPC : elle contient les solutions aux problèmes courants et un rapport de diagnostic à copier si tu as besoin d'aide.</p></details>
+  </div>
+</section>
+
+<!-- FIN -->
+<div class="wrap" style="padding-bottom:72px">
+  <div class="final">
+    <h2>Prêt à alléger ton PC ?</h2>
+    <p>Gratuit, léger, et toujours réversible.</p>
+    <div class="cta"><a class="btn btn-accent" id="dl-end" href="https://github.com/Fluxxy458/optipc-releases/releases/latest/download/OptiPC.exe">⬇&nbsp; Télécharger OptiPC</a></div>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap row">
+    <span>OptiPC. Ce projet n'est pas affilié à Microsoft. Windows est une marque de Microsoft.</span>
+    <span><a href="https://github.com/Fluxxy458/optipc-releases/releases">Versions</a> · <a href="#faq">Questions</a> · <a href="#top">Haut de page</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)},root=$('wa');if(!root)return;
+  var IC={home:'<path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/>',opt:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+    hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',aide:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h0"/>',
+    set:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'};
+  var PAGES=[['home','Accueil'],['opt','Optimisation'],['hist','Historique'],['aide','Aide'],['set','Paramètres']];
+  var nav=$('wa-nav');
+  PAGES.forEach(function(p){var b=document.createElement('button');b.dataset.p=p[0];
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[p[0]]+'</svg>'+p[1];nav.appendChild(b)});
+  function go(id){[].forEach.call(nav.children,function(b){b.classList.toggle('on',b.dataset.p===id)});
+    [].forEach.call(root.querySelectorAll('.wa-page'),function(s){s.classList.toggle('on',s.dataset.p===id)});$('wa-main').scrollTop=0}
+  nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b)go(b.dataset.p)});
+  root.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
+  go('home');
+
+  /* boite de dialogue */
+  var ov=$('wa-ov');
+  function dlg(type,text,btns,cb){
+    var i=$('wa-di');i.className='ic '+type;i.textContent={q:'?',i:'i',w:'!',e:'✕'}[type];
+    $('wa-dt').textContent=text;var f=$('wa-df');f.innerHTML='';
+    btns.forEach(function(t,k){var b=document.createElement('button');b.textContent=t;if(k===0)b.className='d';
+      b.onclick=function(){ov.classList.remove('on');if(cb)cb(k===0&&btns.length>1)};f.appendChild(b)});
+    ov.classList.add('on');f.firstChild.focus();
+  }
+  var info=function(t,ty){dlg(ty||'i',t,['OK'])};
+
+  /* jauges */
+  var G=[['Processeur',22,'8 cœurs'],['Mémoire',48,'7,7 / 16 Go'],['Disque système',61,'312 / 512 Go']],gv=[],R=52,C=2*Math.PI*R;
+  var gw=$('wa-gauges');
+  G.forEach(function(g,i){var d=document.createElement('div');d.className='wa-g';
+    d.innerHTML='<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--w-track)" stroke-width="10"/><circle class="a" cx="60" cy="60" r="'+R+'" fill="none" stroke-width="10" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="'+C+'" style="transition:stroke-dashoffset .8s,stroke .3s"/><text class="v" x="60" y="70" text-anchor="middle">0%</text></svg><b>'+g[0]+'</b><small>'+g[2]+'</small>';
+    gw.appendChild(d);gv.push({v:g[1],el:d,i:i})});
+  function paint(){gv.forEach(function(g){var v=Math.round(g.v),a=g.el.querySelector('.a');
+    a.style.strokeDashoffset=C*(1-v/100);a.style.stroke=v>=85?'var(--w-red)':v>=65?'var(--w-orange)':'var(--w-green)';
+    g.el.querySelector('.v').textContent=v+'%'})}
+  paint();
+  setInterval(function(){gv[0].v=Math.max(4,Math.min(70,gv[0].v+(Math.random()*14-7)));gv[1].v=Math.max(35,Math.min(62,gv[1].v+(Math.random()*4-2)));paint()},2000);
+
+  /* reglages (extrait) : [titre, texte, admin, risque, perso, guide] */
+  var TABS=[['Confidentialité',[
+    ['Désactiver la télémétrie','Réduit les données de diagnostic envoyées à Microsoft.\nAucun fichier personnel n\'est touché.',1],
+    ['Désactiver l\'identifiant publicitaire','Empêche les applications de te suivre pour la publicité ciblée.',0],
+    ['Désactiver l\'historique d\'activité','Windows n\'enregistre plus les applications et fichiers ouverts.',1],
+    ['Désactiver les suggestions Windows','Supprime les pubs et suggestions du menu Démarrer et des notifications.',0],
+    ['Désactiver Bing dans la recherche','La recherche Windows reste locale, sans résultats web.',0],
+    ['Désactiver la localisation','Coupe l\'accès à ta position pour les applications.',0,0,1]]],
+  ['Confort',[
+    ['Afficher les extensions de fichiers','Affiche .exe, .pdf, .docx… pour repérer les faux fichiers.',0],
+    ['Afficher les fichiers cachés','Rend visibles les fichiers et dossiers masqués.',0,0,1],
+    ['Désactiver les touches rémanentes','Évite la fenêtre qui apparaît après 5 appuis sur Maj.',0],
+    ['Ouvrir l\'Explorateur sur Ce PC','Au lieu de l\'Accès rapide.',0],
+    ['Menu contextuel classique','Retrouve l\'ancien clic droit complet de Windows 10.',0],
+    ['Désactiver les widgets Windows','Désinstalle le panneau Widgets. Réinstallable en un clic.',0,1]]],
+  ['Réseau',[
+    ['Désactiver l\'algorithme de Nagle','Réduit la latence dans les jeux en ligne.',1],
+    ['DNS rapide et privé','Utilise un DNS public chiffré à la place de celui du fournisseur.',1,0,1],
+    ['Optimiser TCP','Ajuste la fenêtre de réception pour de meilleurs débits.',1],
+    ['Désactiver l\'optimisation de distribution','Windows n\'envoie plus de mises à jour à d\'autres PC.',0],
+    ['Limiter la bande passante réservée','Libère les 20 % réservés par Windows pour le système.',1]]],
+  ['Performances',[
+    ['Plan Haute performance','Active le plan d\'alimentation le plus réactif.',0,0,1],
+    ['Désactiver les effets de transparence','Allège l\'interface sur les PC modestes.',0],
+    ['Désactiver les animations','Les fenêtres s\'ouvrent instantanément.',0],
+    ['Mode jeu activé','Priorise les ressources pour le jeu au premier plan.',0],
+    ['Récupérer le stockage réservé','Libère environ 7 Go réservés aux mises à jour.\nÀ réactiver si tu as des soucis de mise à jour.',1,1],
+    ['Désactiver l\'hibernation','Supprime hiberfil.sys et libère de la place.',1,1]]]];
+  var ALL=[];TABS.forEach(function(t,ti){t[1].forEach(function(r,i){ALL.push({t:ti,id:ti+'-'+i,title:r[0],txt:r[1],adm:!!r[2],warn:!!r[3],pers:!!r[4],on:false})})});
+  var admin=false,tab=0,busy=false;
+  var grid=$('wa-grid'),tabsEl=$('wa-tabs');
+  TABS.concat([['Maintenance']]).forEach(function(t,i){var b=document.createElement('button');b.textContent=t[0];b.onclick=function(){tab=i;drawTabs();draw()};tabsEl.appendChild(b)});
+  function drawTabs(){[].forEach.call(tabsEl.children,function(b,i){b.classList.toggle('on',i===tab)})}
+  function count(){var n=ALL.filter(function(x){return x.on}).length;
+    $('wa-count').textContent=n+' réglage'+(n>1?'s':'')+' actif'+(n>1?'s':'')+' sur '+ALL.length+' (extrait de démonstration)'}
+
+  /* historique */
+  var H=[['Maintenance','Réussi','Vider les fichiers temporaires',-86400000*2],['OptiPC','Info','Sauvegarde initiale créée',-86400000*3]];
+  var hist=H.map(function(h){return {t:h[0]+' · '+h[1],n:h[2],d:new Date(Date.now()+h[3]),k:''}});
+  function fmt(d){return d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+  function log(title,sub,k){hist.unshift({t:sub,n:title,d:new Date(),k:k||''});drawHist()}
+  function drawHist(){var h=$('wa-hist');h.innerHTML='';
+    if(!hist.length){h.innerHTML='<p class="wa-empty">Aucune entrée pour le moment.</p>';return}
+    hist.forEach(function(x){var r=document.createElement('div');r.className='wa-row';
+      r.innerHTML='<span class="d '+x.k+'"></span><div><b></b><span></span></div><time></time>';
+      r.querySelector('b').textContent=x.n;r.querySelectorAll('span')[1].textContent=x.t;r.querySelector('time').textContent=fmt(x.d);h.appendChild(r)})}
+  $('wa-hclear').onclick=function(){dlg('q','Effacer tout l\'historique ?',['Oui','Non'],function(y){if(y){hist=[];drawHist()}})};
+
+  /* maintenance */
+  var MT=[['Vider les fichiers temporaires','Supprime les fichiers inutiles de Windows et des applications.',0],['Vider la corbeille','Supprime définitivement le contenu de la corbeille.',0],
+    ['Vider le cache DNS','Résout les problèmes de connexion à certains sites.',0],['Analyser les fichiers système (SFC)','Vérifie et répare les fichiers Windows abîmés.',1],
+    ['Créer un point de restauration','Sécurité avant de modifier quoi que ce soit.',1],['Nettoyer le cache des miniatures','Reconstruit les aperçus d\'images.',0]];
+  var mchk=MT.map(function(){return true});
+
+  function sw(x){var b=document.createElement('button');b.className='wa-sw';b.setAttribute('role','switch');b.setAttribute('aria-checked',x.on);b.setAttribute('aria-label',x.title);b.dataset.id=x.id;return b}
+  function draw(){grid.innerHTML='';
+    if(tab===4){MT.forEach(function(m,i){var c=document.createElement('label');c.className='wa-card wa-chk';
+      c.innerHTML='<input type="checkbox"'+(mchk[i]?' checked':'')+'><div><div class="wa-card-h" style="margin-bottom:6px"><h4></h4></div><p></p>'+(m[2]?'<span class="wa-adm">Nécessite les droits administrateur</span>':'')+'</div>';
+      c.querySelector('h4').textContent=m[0];c.querySelector('p').textContent=m[1];
+      c.querySelector('input').onchange=function(e){mchk[i]=e.target.checked};grid.appendChild(c)});
+      var b=document.createElement('div');b.style.gridColumn='1/-1';b.innerHTML='<button class="wa-btn or" id="wa-check">Lancer le check-up</button>';grid.appendChild(b);
+      b.firstChild.onclick=checkup;return}
+    ALL.filter(function(x){return x.t===tab}).forEach(function(x){
+      var c=document.createElement('div');c.className='wa-card';
+      var h=document.createElement('div');h.className='wa-card-h';var t=document.createElement('h4');t.textContent=x.title;h.appendChild(t);h.appendChild(sw(x));c.appendChild(h);
+      x.txt.split('\n').forEach(function(l){var p=document.createElement('p');p.textContent=l;c.appendChild(p)});
+      if(x.adm){var a=document.createElement('span');a.className='wa-adm';a.textContent='Nécessite les droits administrateur';c.appendChild(a)}
+      if(x.warn){var a2=document.createElement('span');a2.className='wa-adm';a2.style.display='block';a2.textContent='Réglage à risque : confirmation demandée';c.appendChild(a2)}
+      grid.appendChild(c)})}
+  grid.addEventListener('click',function(e){var b=e.target.closest('.wa-sw');if(!b||busy)return;
+    var x=ALL.filter(function(y){return y.id===b.dataset.id})[0];toggle(x,!x.on)});
+  function toggle(x,want,quiet){
+    if(x.adm&&!admin){info('Accès refusé : relance OptiPC en administrateur pour ce réglage.','e');return false}
+    var run=function(){x.on=want;draw();count();log(x.title,'Réglage · '+(want?'Activé':'Restauré'),want?'x':'');};
+    if(x.warn&&want&&!quiet){dlg('w','« '+x.title+' » modifie un composant important de Windows.\nUne sauvegarde est faite et tu pourras annuler.\n\nContinuer ?',['Oui','Non'],function(y){if(y)run()});return}
+    run();return true}
+  $('wa-adm').onclick=function(){
+    if(admin){admin=false;mode();return}
+    dlg('q','OptiPC va se relancer avec les droits administrateur.\nWindows te demandera confirmation.\n\nContinuer ?',['Oui','Non'],function(y){if(y){admin=true;mode()}})};
+  function mode(){var t=$('wa-mode');t.classList.toggle('adm',admin);t.lastChild.textContent=admin?'Mode administrateur':'Mode standard';$('wa-adm').textContent=admin?'Revenir en standard':'Relancer en administrateur'}
+  $('wa-refresh').onclick=function(){draw();count()};
+
+  /* panneau de progression */
+  var P=$('wa-prog'),tm=null,t0=0;
+  function pset(v,t,s){$('wa-pbar').style.width=v+'%';$('wa-pp').textContent=Math.round(v)+' %';$('wa-pt').textContent=t;$('wa-ps').textContent=s||''}
+  function pstart(t){P.className='wa-prog on';$('wa-pe').textContent='';pset(0,t,'');t0=Date.now();clearInterval(tm);
+    tm=setInterval(function(){var s=Math.floor((Date.now()-t0)/1000);$('wa-pc').textContent=('0'+Math.floor(s/60)).slice(-2)+':'+('0'+s%60).slice(-2)},500);$('wa-pc').textContent='00:00'}
+  function pend(msg,errs){clearInterval(tm);P.classList.add(errs?'err':'fin');pset(100,errs?'Terminé avec des avertissements':'Terminé',msg);if(errs)$('wa-pe').textContent=errs;busy=false;setBtns()}
+  $('wa-pclose').onclick=function(){if(!busy)P.className='wa-prog'};
+  function setBtns(){['wa-all','wa-none','wa-refresh'].forEach(function(i){$(i).disabled=busy})}
+  function batch(list,want,title,doneMsg){
+    if(busy)return;busy=true;setBtns();pstart(title);var i=0,errs=[];
+    (function step(){
+      if(i>=list.length){pend(doneMsg||('✔ '+(list.length-errs.length)+' opération(s) réussie(s) sur '+list.length+'.'),errs.join('\n'));return}
+      var x=list[i];pset(100*i/list.length,title,'En cours : '+x.title);
+      setTimeout(function(){
+        if(x.adm&&!admin)errs.push('✕ '+x.title+' : accès refusé (droits administrateur requis).');
+        else{x.on=want;log(x.title,'Réglage · '+(want?'Activé':'Restauré'),want?'x':'')}
+        i++;pset(100*i/list.length,title,'');draw();count();step()},520)})()}
+  $('wa-all').onclick=function(){
+    var todo=ALL.filter(function(x){return !x.on&&!x.warn&&!x.pers});
+    if(!todo.length){info('Rien à faire : tous les réglages recommandés sont déjà actifs.');return}
+    dlg('q','Appliquer '+todo.length+' réglage(s) recommandé(s) ?\nLes réglages à risque ou personnels sont exclus.\nChaque modification est sauvegardée.',['Oui','Non'],function(y){if(y)batch(todo,true,'Optimisation en cours')})};
+  $('wa-none').onclick=function(){
+    var todo=ALL.filter(function(x){return x.on});
+    if(!todo.length){info('Aucun réglage actif à restaurer.');return}
+    dlg('q','Restaurer '+todo.length+' réglage(s) à leur valeur d\'origine ?',['Oui','Non'],function(y){if(y)batch(todo,false,'Restauration en cours')})};
+  function checkup(){
+    var list=MT.map(function(m,i){return {title:m[0],adm:!!m[2],i:i}}).filter(function(m){return mchk[m.i]});
+    if(!list.length){info('Coche au moins une tâche.');return}
+    if(busy)return;busy=true;setBtns();pstart('Check-up en cours');var i=0,errs=[];
+    (function step(){
+      if(i>=list.length){pend('✔ Check-up terminé.',errs.join('\n'));log('Check-up',list.length+' tâche(s) · Réussi');return}
+      pset(100*i/list.length,'Check-up en cours','En cours : '+list[i].title);
+      setTimeout(function(){if(list[i].adm&&!admin)errs.push('✕ '+list[i].title+' : droits administrateur requis.');i++;step()},700)})()}
+
+  /* aide */
+  var FAQ=[['OptiPC modifie-t-il mes fichiers personnels ?','Non. OptiPC ne touche qu\'à des réglages Windows (registre, services, planifications). Les nettoyages ne visent que des dossiers temporaires connus.'],
+    ['Comment annuler un réglage ?','Rebascule simplement l\'interrupteur. Tu peux aussi utiliser « Tout restaurer » dans les Paramètres : la valeur d\'origine est remise.'],
+    ['Pourquoi certains réglages demandent les droits administrateur ?','Ils modifient des clés protégées de Windows. Utilise « Relancer en administrateur » en haut de la page Optimisation.'],
+    ['Que fait « Tout optimiser » ?','Il applique les réglages recommandés et sûrs. Les réglages à risque ou qui dépendent de tes goûts sont exclus et restent à toi de choisir.'],
+    ['Windows affiche « géré par votre organisation »','OptiPC n\'utilise aucune stratégie verrouillée. Si ce message apparaît, il ne vient pas d\'OptiPC.'],
+    ['Comment mettre OptiPC à jour ?','Au démarrage, une fenêtre te prévient si une nouvelle version existe. Tu peux aussi la chercher dans les Paramètres.'],
+    ['Que faire si Windows ne démarre plus bien ?','Utilise « Tout restaurer », ou le point de restauration créé par la maintenance.']];
+  var norm=function(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')};
+  function drawFaq(q){var f=$('wa-faq');f.innerHTML='';q=norm(q||'');var n=0;
+    FAQ.forEach(function(it){if(q&&norm(it[0]+' '+it[1]).indexOf(q)<0)return;n++;
+      var d=document.createElement('div');d.className='wa-q';d.innerHTML='<button></button><p></p>';
+      d.firstChild.textContent=it[0];d.lastChild.textContent=it[1];d.firstChild.onclick=function(){d.classList.toggle('on')};f.appendChild(d)});
+    if(!n)f.innerHTML='<p class="wa-empty">Aucun résultat.</p>'}
+  $('wa-q').oninput=function(e){drawFaq(e.target.value)};
+
+  /* parametres */
+  var TH=[['violet','Violet'],['noir','Noir'],['blanc','Blanc'],['systeme','Système']],th=$('wa-themes');
+  function drawTh(){th.innerHTML='';TH.forEach(function(t){var b=document.createElement('button');b.className='wa-btn'+(root.dataset.wt===t[0]?' on':'');
+    b.textContent=t[1]+(root.dataset.wt===t[0]?' (actuel)':'');b.onclick=function(){root.dataset.wt=t[0];drawTh()};th.appendChild(b)})}
+  $('wa-restore').onclick=function(){var todo=ALL.filter(function(x){return x.on});
+    dlg('q','Restaurer tous les réglages d\'origine ?',['Oui','Non'],function(y){if(!y)return;
+      if(!todo.length){info('Rien à restaurer.');return}
+      go('opt');batch(todo,false,'Restauration en cours')})};
+  $('wa-open').onclick=function(){info('Dans l\'application, cela ouvre le dossier de sauvegarde dans l\'Explorateur.\n(Démonstration : rien ne s\'ouvre ici.)')};
+  $('wa-upd').onclick=function(){var s=$('wa-upd');s.setAttribute('aria-checked',s.getAttribute('aria-checked')!=='true')};
+  ov.addEventListener('keydown',function(e){if(e.key==='Escape'){ov.classList.remove('on')}});
+
+  drawTabs();draw();count();drawHist();drawFaq();drawTh();mode();
+})();
+
+(function(){
+  // interrupteurs de la fausse fenetre
+  var sws=[].slice.call(document.querySelectorAll('.sw'));
+  var bar=document.getElementById('p-bar'),pct=document.getElementById('p-pct'),
+      title=document.getElementById('p-title'),msg=document.getElementById('p-msg');
+  var timer=null;
+  function setProgress(v,t,m){bar.style.width=v+'%';pct.textContent=Math.round(v)+' %';title.textContent=t;msg.textContent=m}
+  sws.forEach(function(s){
+    s.addEventListener('click',function(){
+      var on=s.getAttribute('aria-checked')!=='true';
+      s.setAttribute('aria-checked',on?'true':'false');
+      var name=s.getAttribute('aria-label');
+      setProgress(100,on?'Réglage appliqué':'Réglage restauré',(on?'✔ ':'↺ ')+name+(on?' : sauvegarde faite, réglage actif.':' : valeur d\'origine remise.'));
+    });
+  });
+  document.getElementById('demo-all').addEventListener('click',function(){
+    if(timer)return;
+    var todo=sws.filter(function(s){return s.getAttribute('aria-checked')!=='true'});
+    if(!todo.length){setProgress(100,'Rien à faire','Tous les réglages sont déjà actifs.');return}
+    var i=0;setProgress(0,'Optimisation en cours','');
+    timer=setInterval(function(){
+      var s=todo[i];s.setAttribute('aria-checked','true');i++;
+      setProgress(100*i/todo.length,i<todo.length?'Optimisation en cours':'Terminé','En cours : '+s.getAttribute('aria-label'));
+      if(i>=todo.length){clearInterval(timer);timer=null;msg.textContent='✔ Toutes les opérations sont terminées.'}
+    },650);
+  });
+
+  // numero de la derniere version (si GitHub repond ; sinon le lien reste valable)
+  try{
+    fetch('https://api.github.com/repos/Fluxxy458/optipc-releases/releases/latest',{headers:{'Accept':'application/vnd.github+json'}})
+      .then(function(r){return r.ok?r.json():null})
+      .then(function(d){
+        if(!d||!d.tag_name)return;
+        document.getElementById('ver').textContent='Dernière version : '+d.tag_name+' · Gratuit pour Windows';
+      }).catch(function(){});
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
